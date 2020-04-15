@@ -59,8 +59,10 @@ d <- vroom::vroom(here::here("data", "train.csv"),
 Set a seed and split the data. Do not stratify by any variables. Extract the training data from this split.
 
 ```{r split data}
-
-
+set.seed(123)
+splt <- initial_split(d)
+train <- training(splt)
+train
 ```
 
 # 2. Evaluate variable importance
@@ -68,31 +70,42 @@ Set a seed and split the data. Do not stratify by any variables. Extract the tra
 Use {vip} to identify the most important variables related to score in the training data. Remember to remove ID variables from the dataset prior to evaluating variable importance (e.g., select(train, -contains("id"), -ncessch))).
 
 ```{r vip var importance}
+train2 <- select(train, -contains("id"), -ncessch)
 
-
+vip_1 <- vip(lm(score ~ ., train2))
 ```
 
 Produce a plot displaying a rank ordering of variables by their importance.
 
 ```{r vip plot 1}
-
+vip_1
 ```
 
 Produce at least three additional plots displaying the relation between a given variables of your choosing and the outcome.
 
 ```{r vip plot 2}
-
+vip_2 <- vip(lm(score ~ tag_ed_fg*sp_ed_fg, train2))
+vip_2
 ```
 
+The above plot shows the interaction between tag and sped, which isn't adding much to the model.
 
 ```{r vip plot 3}
-
+vip_3 <- vip(lm(score ~ ethnic_cd, train2))
+vip_3
 ```
 
+The above plot shows that examining ethnity (Hispanic and black) may be good to include in model.
 
 ```{r vip plot 4}
+vip_4 <- vip(lm(score ~ econ_dsvntg*ethnic_cd, train2))
+vip_4
 
+vi_4 <- vi(lm(score ~ econ_dsvntg*ethnic_cd, train2))
+vi_4
 ```
+
+It appears the interaction isn't adding much. It appears that the main effect of the variables is more important in the model predcition than the interactions of the variables.
 
 # 3. Fit a preliminary model
 
@@ -121,6 +134,7 @@ You can then use this recipe (or any other recipe you end up creating) when esti
 
 Fit a new model that either (a) provides a better estimate of out-of-sample predictive accuracy, or (b) provides a similar estimate of out-of-sample predictive accuracy with a smaller number of variables. Feel free to use interactions, polynomials, etc. Note if you’re trying to fit interactions/polynomials you will likely need to do so within a recipe, additing additional steps for step_interact() and/or step_poly. Additionally, you’ll need to explicitly dummy code your nominal variables before creating interactions with step_dummy(all_nominal()). This will actually change the names of your columns, so when creating interactions in the steps that follow, it’s easiest to use starts_with helper functions, e.g., step_interact(terms = ~ starts_with("econ_dsvntg") + starts_with("sp_ed_fg")). Alternatively, you can stick with a main-effects only model for now.
 
+assessment sample
 ```{r model refine}
 
 
