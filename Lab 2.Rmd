@@ -112,33 +112,72 @@ It appears the interaction isn't adding much. It appears that the main effect of
 Fit a model using as many variables as you’d like, using main effects only (i.e., no interactions) and only linear terms (i.e., no polynomial fits). Estimate the RMSE and R2 for the given model using k-fold cross-validation.
 
 ```{r prelim model}
+cv <- vfold_cv(train)
 
+mod <- linear_reg()
+mod
 
+mod <- mod %>% 
+  set_engine("lm")
+mod
+
+mod <- mod %>% 
+  set_mode("regression")
+mod
+
+baseline_rec <- recipe(score ~ econ_dsvntg + ethnic_cd + sp_ed_fg, train)
+
+baseline_rec
+
+m1 <- mod %>% 
+  fit_resamples(preprocessor = baseline_rec,
+                resamples = cv)
+m1
+
+#rmse and r2 are default 
+
+m1_metrics <- m1 %>% 
+  select(id, .metrics) %>% 
+  unnest(.metrics) %>% 
+  pivot_wider(names_from = .metric, 
+              values_from = .estimate)
+
+m1_metrics
 ```
 
 It’s probably easiest if you use a recipe. For this portion you only need to add the formula and the data source. For example, something like the below
 
-rec <- recipe(score ~ tag_ed_fg + sp_ed_fg, train) 
-rec
-## Data Recipe
-## 
-## Inputs:
-## 
-##       role #variables
-##    outcome          1
-##  predictor          2
-
-You can then use this recipe (or any other recipe you end up creating) when estimating your models with fit_resamples. In later code, you can also try adding other steps to this recipe (or creating a new recipe for a new model) that includes things like dummy coding all nominal variables (see the documentation for recipes here). We will get into this more later. I only refer you there now if you feel like dipping your toes in. If you only specify the formula, you shouldn’t need any additional steps.
 
 # 4. Refine the model
 
 Fit a new model that either (a) provides a better estimate of out-of-sample predictive accuracy, or (b) provides a similar estimate of out-of-sample predictive accuracy with a smaller number of variables. Feel free to use interactions, polynomials, etc. Note if you’re trying to fit interactions/polynomials you will likely need to do so within a recipe, additing additional steps for step_interact() and/or step_poly. Additionally, you’ll need to explicitly dummy code your nominal variables before creating interactions with step_dummy(all_nominal()). This will actually change the names of your columns, so when creating interactions in the steps that follow, it’s easiest to use starts_with helper functions, e.g., step_interact(terms = ~ starts_with("econ_dsvntg") + starts_with("sp_ed_fg")). Alternatively, you can stick with a main-effects only model for now.
 
 assessment sample
+
+Aiming for more predictive model by adding tag. 
 ```{r model refine}
 
 
+rec_1 <- recipe(score ~ econ_dsvntg + ethnic_cd + sp_ed_fg + tag_ed_fg, train)
+
+m2 <- mod %>% 
+  fit_resamples(preprocessor = rec_1,
+                resamples = cv)
+m2
+
+
+rec_1_metrics <- m2 %>% 
+  select(id, .metrics) %>% 
+  unnest(.metrics) %>% 
+  pivot_wider(names_from = .metric, 
+              values_from = .estimate)
+
+rec_1_metrics
+
+
 ```
+
+The metrics from the refined model had a slightly smaller RMSE, and better estimates for out of sample predictive accuracy.  
 
 # 5. Make predictions on your test dataset
 
