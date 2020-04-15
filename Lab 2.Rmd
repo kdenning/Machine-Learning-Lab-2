@@ -189,6 +189,8 @@ Note, you can do this by first extracting your full, prepped dataset from your r
 prepped_train <- rec %>% 
   prep() %>% 
   juice()
+  
+
 where rec is your recipe. If you then look at prepped_train, you’ll see categorical variables have been dummy coded, and any interactions you’ve made, etc., will be new columns in the data frame.
 
 Second you can fit the full model with something like
@@ -198,6 +200,11 @@ where mod is your model object (e.g., linear_reg()), score ~ . is shorthand synt
 
 ```{r fit final model}
 
+prepped_train <- rec_1 %>% 
+  prep() %>% 
+  juice()
+
+full_train_fit <- fit(mod, score ~ ., prepped_train)
 
 ```
 
@@ -205,10 +212,16 @@ where mod is your model object (e.g., linear_reg()), score ~ . is shorthand synt
 
 ```{r extract test dataset}
 
+test <- testing(splt)
+
 
 ```
 
 - Apply your recipe to your test dataset
+```{r}
+
+```
+
 
 This implies making the same preprocessing steps to the test dataset that we did to our training dataset. The code is the same, except instead of using juice we use bake and we have to tell it the new dataset to apply to steps to. For example, something like the below
 
@@ -217,6 +230,11 @@ prepped_test <- rec %>%
   bake(test)
 
 ```{r apply recipe to test}
+# apply recipe 
+test_prepped <- rec_1 %>% 
+  prep() %>% 
+  bake(test)
+test_prepped
 
 ```
 
@@ -228,6 +246,15 @@ When calculating RMSE and R2, you may want to use the rmse and rsq functions fro
 
 ```{ r test preds}
 
+preds <- test_prepped %>% 
+  mutate(estimate = predict(full_train_fit$fit, newdata = .)) %>% 
+  select(truth = score, estimate)
+preds
+
+bind_rows(
+  rmse(preds, truth, estimate),
+  rsq(preds, truth, estimate)
+)
 
 ```
 
