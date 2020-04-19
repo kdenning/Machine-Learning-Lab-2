@@ -95,7 +95,7 @@ vip_3 <- vip(lm(score ~ ethnic_cd, train2))
 vip_3
 ```
 
-The above plot shows that examining ethnity (Hispanic and black) may be good to include in model.
+The above plot shows that examining ethnicity (Hispanic and black) may be good to include in model.
 
 ```{r vip plot 4}
 vip_4 <- vip(lm(score ~ econ_dsvntg*ethnic_cd, train2))
@@ -105,7 +105,7 @@ vi_4 <- vi(lm(score ~ econ_dsvntg*ethnic_cd, train2))
 vi_4
 ```
 
-It appears the interaction isn't adding much. It appears that the main effect of the variables is more important in the model predcition than the interactions of the variables.
+It appears the interaction isn't adding much. It appears that the main effect of the variables is more important in the model prediction than the interactions of the variables.
 
 # 3. Fit a preliminary model
 
@@ -175,7 +175,7 @@ The metrics from the refined model had a slightly smaller RMSE, and better estim
 
 # 5. Make predictions on your test dataset
 
-Complete each bullett below. Text and code between bulletts is intended to be clarifying.
+Complete each bullett below. Text and code between bullets is intended to be clarifying.
 
 ## Fit your final model (Q4) to full training set
 
